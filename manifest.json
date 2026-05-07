@@ -2,7 +2,7 @@
   "name": "BeeJob Simulator",
   "short_name": "BeeJob",
   "description": "Simulatore di test per concorsi pubblici",
-  "start_url": "beestudy.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#1a1a1a",
   "theme_color": "#ffcc00",
