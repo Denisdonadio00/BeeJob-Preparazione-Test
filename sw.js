@@ -1,7 +1,10 @@
 const CACHE_NAME = 'beejob-v1';
 const assets = [
-    'index.html',
-    'manifest.json'
+    './',
+    './index.html',
+    './manifest.json',
+    './icon-192.png',
+    './icon-512.png'
 ];
 
 // Installazione: salva i file nella cache
