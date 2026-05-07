@@ -1,6 +1,6 @@
 const CACHE_NAME = 'beejob-v1';
 const assets = [
-    'beestudy.html',
+    'index.html',
     'manifest.json'
 ];
 
