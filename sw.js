@@ -1,4 +1,4 @@
-const CACHE_NAME = 'beejob-v1';
+const CACHE_NAME = 'beejob-v1.1'; // Incrementa questo ogni volta che modifichi l'HTML o i dati
 const assets = [
     './',
     './index.html',
@@ -21,6 +21,25 @@ self.addEventListener('install', event => {
             );
         })
     );
+    // Forza il nuovo Service Worker a diventare attivo immediatamente
+    self.skipWaiting();
+});
+
+// Pulizia delle vecchie cache all'attivazione
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cache => {
+                    if (cache !== CACHE_NAME) {
+                        console.log('SW: Eliminazione vecchia cache...', cache);
+                        return caches.delete(cache);
+                    }
+                })
+            );
+        })
+    );
+    return self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
