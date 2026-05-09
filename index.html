@@ -295,6 +295,10 @@
                 <span class="icon">🎲</span>
                 <span>Test<br>Orale</span>
             </div>
+            <div class="menu-item" onclick="initTest(null, true)" style="grid-column: span 2;">
+                <span class="icon">⚠️</span>
+                <span>QUIZ<br>FINALE</span>
+            </div>
         </div>
     </div>
     <!-- STUDIO MENU VIEW -->
@@ -758,7 +762,10 @@ Le soluzioni digitali sono facilmente scalabili e possono essere adattate alle e
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         const target = document.getElementById(viewId);
         if(target) target.classList.add('active');
-        window.scrollTo(0,0);
+        
+        // Reset dello scroll del contenitore principale
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) mainContent.scrollTop = 0;
     }
 
     function navTo(page, el) {
@@ -822,39 +829,58 @@ Le soluzioni digitali sono facilmente scalabili e possono essere adattate alle e
 
     // --- Nuove funzioni per il Sorteggio Scritto e il Test ---
 
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
     function startScrittoDraw() {
         showView('view-scritto-draw');
         document.getElementById('draw-instruction').innerText = "Le buste stanno girando... attendi l'estrazione.";
+        
+        // Prepariamo un sorteggio reale: mescoliamo le 3 unità e le assegniamo alle 3 buste
+        const units = shuffleArray([1, 2, 3]);
+        
         const envelopes = document.querySelectorAll('#envelope-container .envelope');
-        envelopes.forEach(env => {
+        envelopes.forEach((env, idx) => {
             env.classList.add('spinning');
             env.onclick = null; // Disable clicks during animation
+            env.setAttribute('data-unit', units[idx]);
         });
 
         setTimeout(() => {
             envelopes.forEach(env => {
                 env.classList.remove('spinning');
-                env.onclick = selectEnvelope; // Enable clicks after animation
+                env.onclick = function() {
+                    const unitId = this.getAttribute('data-unit');
+                    initTest(unitId);
+                };
             });
             document.getElementById('draw-instruction').innerText = "Scegli una busta per iniziare il test!";
         }, 2000); // Spin for 2 seconds
     }
 
-    function selectEnvelope() {
-        const randomUnitId = Math.floor(Math.random() * 3) + 1; // Randomly select 1, 2, or 3
-        initTest(randomUnitId);
-    }
-
-    function initTest(unitId) { // This is for the written test
+    function initTest(unitId, isFinal = false) { // This is for the written test
         clearInterval(timerInterval); // Clear any existing timer
         userAnswers = {}; // Reset user answers
 
-        const allQuestions = databaseScritti[unitId];
-        currentTestQuestions = [...allQuestions]; // Domande nell'ordine originale di studio
+        if (isFinal) {
+            // Uniamo tutte le domande dalle 3 unità (90 in totale)
+            const pool = [...databaseScritti[1], ...databaseScritti[2], ...databaseScritti[3]];
+            // Mescoliamo correttamente e prendiamo le prime 30
+            currentTestQuestions = shuffleArray(pool).slice(0, 30);
+            document.getElementById('test-unit-title').innerText = "QUIZ FINALE (30 DOMANDE)";
+        } else {
+            const allQuestions = databaseScritti[unitId];
+            currentTestQuestions = [...allQuestions]; 
+            document.getElementById('test-unit-title').innerText = `Test Scritto Unità ${unitId}`;
+        }
         
         const area = document.getElementById('quiz-area');
         area.innerHTML = ''; // Clear previous questions
-        document.getElementById('test-unit-title').innerText = `Test Scritto Unità ${unitId}`;
         document.getElementById('submit-test-btn').style.display = 'block'; // Show submit button
 
         currentTestQuestions.forEach((q, qIdx) => {
